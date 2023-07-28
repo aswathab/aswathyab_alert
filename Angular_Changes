@@ -1,0 +1,162 @@
+
+// Author : Aswaty AB
+// Created date :28.07.2023
+// Simple Angular code for updation of employee details
+// given type script code angular, html code, css
+
+import { Component, } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-edit',
+  templateUrl: './edit.component.html',
+  styleUrls: ['./edit.component.css']
+})
+export class EditComponent 
+
+{
+
+  idNumber:any;
+  idno:number=0;
+  name:string="";
+  address:string="";
+  project:number=0;
+  status:number=0;
+  isUpdated:Boolean| undefined;
+  msg: string | undefined;
+  listProjects: any;
+
+  constructor(private client:HttpClient, route:ActivatedRoute) 
+ {
+
+//Fetching a particular employee using id as parameter
+  route.paramMap.subscribe(params=>
+    {
+    this.idNumber=params.get("idno");
+    console.log("idno "+this.idNumber);
+  });
+
+// fetching details of employees and providing to edit form for the updation
+  this.client.get("https://localhost:7277/Employee/GetEmployee/"+this.idNumber)
+  .subscribe(result=>{
+    let data=JSON.stringify(result); 
+    this.idno=JSON.parse(data).accno;
+    this.name=JSON.parse(data).name;
+    this.address=JSON.parse(data).address;
+    this.project=JSON.parse(data).account;
+    this.status=JSON.parse(data).status;
+  })
+}
+
+//Listing all projects in table through API
+AccountList() {
+  this.client.get("https://localhost:4200/Employee/GetProjects").subscribe(result =>
+   {this.listProjects = result;
+  }) }
+
+//Function to Update the employee and notify on updation 
+UpdateEmployee(frm:any){
+  this.client.put("https://localhost:4200/Employee/UpdateEmployee/",frm)
+  .subscribe(result=>{
+    let  data=JSON.stringify(result);
+    this.isUpdated=true;
+    this.msg="Employee Details have Been Updated"; 
+  },
+  error=>{
+    this.isUpdated=false;
+    this.msg="Invalid Entry,Updation failed"
+  })}}
+
+
+//HTML code of .ts file
+
+<!DOCTYPE html>
+<html>
+<body>
+<h3>UPDATION EMPLOYEE DETAILS</h3>
+<div >
+  <form  style="float:left" ngForm #frm="ngForm" name="frm" (ngSubmit)="UpdateEmployee(frm.value)" >
+    <div > ID</div>
+    <input type="text" id="idno" [(ngModel)]="idno"  name="idno" placeholder="Enter the ID" required>
+   
+    <div> Name</div>
+    <input type="text" id="name" [(ngModel)]="name"  name="name" placeholder="Enter the Name" minlength="4" pattern="^[A-Z]{1}[a-z]+(\\s[A-Z]{1}[a-z]+)*$" required>
+
+    <div > Address</div>
+    <input type="text" id="address" [(ngModel)]="address"   name="address" placeholder="Enter the address" maxlength="25"  required>
+
+    <div >PROJECT ASSIGNED</div>
+ <select type="number"  id="colFormLabelLg id" class="form-control form-control-lg"    [(ngModel)]="project" name="project" >
+    <option value="" disabled="disabled">--Choose a Project--</option>
+    <option *ngFor="let act of listProjects" [value]="act.id" id="{{act.id}}" >{{act.projects}}</option>
+  </select>
+<br>
+    <div >Active Id</div>
+    <input type="text" id="status" [(ngModel)]="status" name="status" placeholder="Enter the status"  required>
+<br>
+    <button type="submit" >Save</button><br> 
+  </form>
+  <div>
+<span [style.color]="isUpdated? 'green' : 'red' ">{{msg}}</span> 
+</div>
+</div>
+</body>
+</html>
+
+//CSS file
+
+.alert 
+{
+    color:red;
+}
+
+input[type=text], select {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  input[type=radio], select {
+    width: 50%;
+    padding: 10px 12px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  select[type=number], select {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  input[type=submit] {
+    width: 50%;
+    background-color:black;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  input[type=submit]:hover {
+    background-color: black;
+  }
+  
+  div {
+    width:50%;
+    border-radius: 5px;
+    background-color:#ddd;
+    padding: 5px;
+  }
+
